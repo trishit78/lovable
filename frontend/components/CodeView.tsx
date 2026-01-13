@@ -13,7 +13,7 @@ import { useChat } from "@/app/context/chatContext";
 import axios from "axios";
 const CodeView = () => {
   const [activeTab, setActiveTab] = useState(false);
-  const [files,setFiles] = useState(lookup.DEFAULT_FILE);
+  const [files,setFiles] = useState();
   const {messages} = useChat();
 
   //console.log('from code view',messages)
@@ -22,13 +22,10 @@ const getAiResponse = async () => {
   
    
     const result = await axios.post("api/gen-code", {
-      prompt: messages,
+      prompt: messages[messages?.length - 1].data,
     });
-    console.log('ai code response',result.data.result);
-    const aiRes = result.data.result;
-    const mergeFiles = {...lookup.DEFAULT_FILE,...aiRes?.files}
-    console.log('merge',mergeFiles)
-    setFiles(mergeFiles)
+    console.log('ai code response',result.data);
+    setFiles(result.data.files)
     
   };
 
@@ -43,7 +40,7 @@ const getAiResponse = async () => {
     }, [messages]);
 
 
-  console.log('all files',files)
+  //console.log('all files',files)
 
 
   return (

@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import PROMPT from "../data/prompt";
 
-const client = new OpenAI({
+export const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
@@ -49,42 +49,61 @@ export async function sendChatMessage(messages: IncomingMessage[]) {
   return response.choices[0].message.content;
 }
 
-export async function generateCode(messages: IncomingMessage[]) {
-  if (!Array.isArray(messages) || messages.length === 0) {
-    throw new Error("Messages must be a non-empty array");
+// export async function generateCode(messages: IncomingMessage[]) {
+//   if (!Array.isArray(messages) || messages.length === 0) {
+//     throw new Error("Messages must be a non-empty array");
+//   }
+
+//   // ✅ ONLY take the latest user intent
+//   const lastUserMessage = messages
+//     .slice()
+//     .reverse()
+//     .find((m) => m.role === "user");
+
+//   if (!lastUserMessage) {
+//     throw new Error("No user instruction found");
+//   }
+// console.log('last user messages',lastUserMessage)
+//   const response = await client.chat.completions.create({
+//     model: "gpt-4o-mini",
+
+//     messages: [
+//       {
+//         role: "system",
+//         content: PROMPT.CODE_GEN_PROMPT,
+//       },
+//       {
+//         role: "user",
+//         content: lastUserMessage.data, // ✅ plain English
+//       },
+//     ],
+
+//     // 🔒 STRICT JSON OUTPUT
+//     response_format: { type: "json_object" },
+
+//     temperature: 0.2,
+//     top_p: 0.9,
+//     max_tokens: 2500,
+//   });
+
+//   return response.choices[0].message.content;
+// }
+
+
+export const tools = [
+  {
+    type: "function",
+    function: {
+      name: "update_file",
+      description: "Create or update a code file",
+      parameters: {
+        type: "object",
+        properties: {
+          path: { type: "string" },
+          code: { type: "string" }
+        },
+        required: ["path", "code"]
+      }
+    }
   }
-
-  // ✅ ONLY take the latest user intent
-  const lastUserMessage = messages
-    .slice()
-    .reverse()
-    .find((m) => m.role === "user");
-
-  if (!lastUserMessage) {
-    throw new Error("No user instruction found");
-  }
-console.log('last user messages',lastUserMessage)
-  const response = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-
-    messages: [
-      {
-        role: "system",
-        content: PROMPT.CODE_GEN_PROMPT,
-      },
-      {
-        role: "user",
-        content: lastUserMessage.data, // ✅ plain English
-      },
-    ],
-
-    // 🔒 STRICT JSON OUTPUT
-    response_format: { type: "json_object" },
-
-    temperature: 0.2,
-    top_p: 0.9,
-    max_tokens: 2500,
-  });
-
-  return response.choices[0].message.content;
-}
+];
